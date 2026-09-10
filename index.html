@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#090014">
+<title>Birthday Clock 🎂</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;min-height:100vh;display:flex;justify-content:center;align-items:center;background:radial-gradient(circle,#251044,#08000f 72%);color:#fff;font-family:Arial,sans-serif}
+.app{width:min(94vw,720px);text-align:center;padding:20px 12px 30px}
+h1{margin:0 0 12px;font-size:clamp(25px,6vw,42px)}
+.controls{display:grid;grid-template-columns:1fr 1fr;gap:10px;max-width:620px;margin:auto}
+label{text-align:left;font-size:13px;color:#ddd}
+input,select,button{width:100%;margin-top:5px;padding:11px;border:0;border-radius:10px;font-size:15px}
+button{cursor:pointer;font-weight:bold;background:#ff4fa3;color:white}
+.clock-wrap{width:min(82vw,500px);aspect-ratio:1;margin:12px auto}
+canvas{width:100%;height:100%;display:block}
+.digital{font-size:clamp(20px,5vw,30px);font-weight:bold;color:#66e6ff}
+.zone{margin-top:7px;color:#ffbd63;font-size:14px;word-break:break-word}
+.hint{font-size:12px;color:#bbb;margin-top:10px}
+.birthday{display:none;position:fixed;inset:0;z-index:10;justify-content:center;align-items:center;overflow:auto;padding:20px;background:radial-gradient(circle,#7a125f,#190020 75%)}
+.birthday.show{display:flex;animation:pop .8s ease}
+.card{width:min(94vw,670px);padding:25px 18px;border-radius:28px;background:rgba(0,0,0,.4);backdrop-filter:blur(8px);box-shadow:0 0 50px rgba(255,90,190,.35);text-align:center}
+.card h2{font-size:clamp(34px,9vw,62px);margin:5px 0}
+.name{font-size:clamp(28px,7vw,48px);color:#ffe66d;font-weight:bold}
+.wish{font-size:clamp(18px,4vw,25px);margin:15px 0}
+#birthdayImage{max-width:100%;max-height:38vh;border-radius:18px;object-fit:contain;display:block;margin:0 auto 18px;box-shadow:0 10px 35px #0008}
+.personal-message{margin:20px auto;max-width:590px;max-height:40vh;overflow-y:auto;padding:18px;border-radius:18px;background:#ffffff12;border:1px solid #ffffff22;text-align:left;line-height:1.65;font-size:clamp(15px,3.7vw,19px);color:#fff4fb}
+.tap{font-size:13px;color:#ffd0ea;margin-top:12px}
+@keyframes pop{from{opacity:0;transform:scale(.8)}to{opacity:1;transform:scale(1)}}
+@media(max-width:560px){.controls{grid-template-columns:1fr}.clock-wrap{width:min(88vw,500px)}}
+</style>
+</head>
+<body>
+<div class="app">
+<h1>🎂 Birthday Clock 🎉</h1>
+<div class="controls">
+<label>Birthday person's name<input id="name" value="Penzi" maxlength="60"></label>
+<label>Birthday timezone
+<select id="timezone">
+<option>Asia/Kolkata</option><option>Europe/London</option><option>Europe/Oslo</option>
+<option>America/New_York</option><option>America/Los_Angeles</option><option>Asia/Tokyo</option>
+<option>Australia/Sydney</option><option>UTC</option>
+</select></label>
+<label>Birthday date<input id="date" type="date"></label>
+<label>Birthday image<input id="imageInput" type="file" accept="image/*"></label>
+<label>Birthday music<input id="musicInput" type="file" accept="audio/*"></label>
+</div>
+<button id="save">Save Birthday Settings</button>
+<div id="musicStatus" class="hint">Music: not selected</div>
+<div class="clock-wrap"><canvas id="clock" width="700" height="700"></canvas></div>
+<div id="digital" class="digital"></div>
+<div id="zone" class="zone"></div>
+<div class="hint">Keep this page open around midnight for the automatic celebration.</div>
+</div>
+
+<div id="birthday" class="birthday">
+<div class="card">
+<div style="font-size:30px">🎈 🎁 🎈</div>
+<h2>🎉 HAPPY BIRTHDAY! 🎉</h2>
+<div id="birthdayName" class="name">Penzi</div>
+<div class="wish">Wishing you an amazing birthday! 🥳</div>
+<img id="birthdayImage" src="PENZI.jpeg" alt="Penzi's birthday photo">
+<div class="personal-message">
+Hey Penzi...❤️<br><br>
+Writing this and thinking about how far we come and now I wouldn't want to run out of words to tell you how much I've felt till now🥲......thrz nothing more than i would right than to be back home to celebrate you Hun .....a lot of me feels hurt that a few things can't be perfect today but it's calm for that i apologise but i don't want it to take away from this beautiful age you will be walking into Penzi.....May it be full of JOY just like your name says . More blessings and a step closer to everything you deserve🥰.....Thank you for making everyday beautiful am so lucky to have that alone makes me so proud more than you can know.......I built this little program piece by piece with a lot of care and patience and to share this with you today means alot. I can't wait to do more than this i definitely will 🎂 🥂to more moments of happiness we give eachother 🥲 to more years of listening to your crazy laughter🥲🤣🤣 and yes to more years of fallling in love with you my Baby🥰❤️.....I LOVE YOU FROM UR DEAR HUSBAND💕
+</div>
+<div style="font-size:30px">🎂 🎊 ✨ 🎊 🎂</div>
+<div id="tap" class="tap">If music does not start automatically, tap the screen once. 🎵</div>
+</div>
+</div>
+
+<script>
+const canvas=document.getElementById("clock"),ctx=canvas.getContext("2d");
+const nameInput=document.getElementById("name"),tzInput=document.getElementById("timezone"),dateInput=document.getElementById("date");
+const imageInput=document.getElementById("imageInput"),musicInput=document.getElementById("musicInput");
+const birthday=document.getElementById("birthday"),birthdayName=document.getElementById("birthdayName"),birthdayImage=document.getElementById("birthdayImage");
+const digital=document.getElementById("digital"),zoneText=document.getElementById("zone"),musicStatus=document.getElementById("musicStatus");
+let imageData=localStorage.getItem("birthdayImage")||"PENZI.jpeg";
+let musicData=localStorage.getItem("birthdayMusic")||"birthday-music.mp3",birthdayAudio=null,triggered=false;
+const pad=n=>String(n).padStart(2,"0");
+const today=new Date();dateInput.value=`${today.getFullYear()}-${pad(today.getMonth()+1)}-${pad(today.getDate())}`;
+try{const s=JSON.parse(localStorage.getItem("birthdaySettings")||"{}");if(s.name)nameInput.value=s.name;if(s.timezone)tzInput.value=s.timezone;if(s.date)dateInput.value=s.date}catch{}
+if(imageData)birthdayImage.src=imageData;
+if(localStorage.getItem("birthdayMusic")) musicStatus.textContent="Music: saved"; else musicStatus.textContent="Music: Marioo - Nairobi 🎵";
+
+imageInput.onchange=()=>{const f=imageInput.files[0];if(!f)return;const r=new FileReader();r.onload=e=>{imageData=e.target.result;birthdayImage.src=imageData;localStorage.setItem("birthdayImage",imageData)};r.readAsDataURL(f)};
+musicInput.onchange=()=>{const f=musicInput.files[0];if(!f)return;const r=new FileReader();r.onload=e=>{musicData=e.target.result;localStorage.setItem("birthdayMusic",musicData);musicStatus.textContent=`Music: ${f.name}`};r.readAsDataURL(f)};
+document.getElementById("save").onclick=()=>{localStorage.setItem("birthdaySettings",JSON.stringify({name:nameInput.value.trim()||"Penzi",timezone:tzInput.value,date:dateInput.value}));triggered=false;alert("Birthday settings saved! 🎂")};
+
+function parts(d,tz){const a=new Intl.DateTimeFormat("en-US",{timeZone:tz,year:"numeric",month:"2-digit",day:"2-digit",hour:"2-digit",minute:"2-digit",second:"2-digit",hour12:false}).formatToParts(d),o={};a.forEach(p=>{if(p.type!=="literal")o[p.type]=p.value});return{year:+o.year,month:+o.month,day:+o.day,hour:+o.hour,minute:+o.minute,second:+o.second}}
+function hand(deg,len,color,width){const a=deg*Math.PI/180;ctx.strokeStyle=color;ctx.lineWidth=width;ctx.lineCap="round";ctx.beginPath();ctx.moveTo(350,350);ctx.lineTo(350+Math.sin(a)*len,350-Math.cos(a)*len);ctx.stroke()}
+function draw(t){
+ctx.clearRect(0,0,700,700);const g=ctx.createRadialGradient(350,350,20,350,350,300);g.addColorStop(0,"#24113d");g.addColorStop(1,"#08000f");ctx.fillStyle=g;ctx.beginPath();ctx.arc(350,350,300,0,Math.PI*2);ctx.fill();
+ctx.strokeStyle="white";ctx.lineWidth=7;ctx.beginPath();ctx.arc(350,350,300,0,Math.PI*2);ctx.stroke();
+for(let i=0;i<60;i++){const a=i*Math.PI/30,outer=278,inner=i%5===0?245:262;ctx.beginPath();ctx.moveTo(350+Math.sin(a)*outer,350-Math.cos(a)*outer);ctx.lineTo(350+Math.sin(a)*inner,350-Math.cos(a)*inner);ctx.strokeStyle=i%5===0?"white":"#777";ctx.lineWidth=i%5===0?6:2;ctx.stroke()}
+ctx.fillStyle="white";ctx.font="bold 34px Arial";ctx.textAlign="center";ctx.textBaseline="middle";
+for(let n=1;n<=12;n++){const a=n*Math.PI/6;ctx.fillText(n,350+Math.sin(a)*212,350-Math.cos(a)*212)}
+const sec=t.second,min=t.minute+sec/60,hr=(t.hour%12)+min/60;
+hand(hr*30,135,"#66aaff",12);hand(min*6,190,"#53e68b",8);hand(sec*6,225,"#ff4f62",3);
+ctx.fillStyle="#ffe66d";ctx.beginPath();ctx.arc(350,350,12,0,Math.PI*2);ctx.fill();
+}
+function showBirthday(){
+triggered=true;birthdayName.textContent=nameInput.value.trim()||"Penzi";
+birthdayImage.src=imageData||"PENZI.jpeg";
+if(musicData){birthdayAudio=new Audio(musicData);birthdayAudio.loop=true;birthdayAudio.volume=.8;birthdayAudio.play().catch(()=>{document.getElementById("tap").textContent="🎵 Tap anywhere on this birthday screen to start the music."})}
+birthday.classList.add("show");
+}
+birthday.onclick=()=>{if(birthdayAudio)birthdayAudio.play().catch(()=>{})};
+
+function tick(){
+const now=new Date(),tz=tzInput.value,t=parts(now,tz),cd=`${t.year}-${pad(t.month)}-${pad(t.day)}`;
+digital.textContent=`${pad((t.hour%12)||12)}:${pad(t.minute)}:${pad(t.second)} ${t.hour>=12?"PM":"AM"}`;
+zoneText.textContent=`Timezone: ${tz} • ${cd}`;draw(t);
+if(dateInput.value===cd&&t.hour===0&&t.minute===0&&t.second<4&&!triggered)showBirthday();
+if(dateInput.value!==cd)triggered=false;
+requestAnimationFrame(tick);
+}
+tick();
+</script>
+</body>
+</html>
